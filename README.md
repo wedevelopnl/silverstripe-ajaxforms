@@ -1,52 +1,86 @@
-# SilverStripe Static Pages
+# SilverStripe Ajax Forms
 
 ## Introduction
 
-Generate static cache for pages
+Ajax forms for silverstripe, using jquery and jquery validate
 
 ## Requirements
 
 * SilverStripe CMS ^4.0
+* jQuery
+* jQuery validate
 
 ## Installation
 
 ```
-composer require "thewebmen/silverstripe-staticpages"
+composer require "thewebmen/silverstripe-ajaxforms"
 ```
-Run the task: dev/tasks/install-staticpages
 
 ## How to use
-By default the module creates static pages for all SiteTree pages, you can change this by adding the method "generatestatic" on a page object and return false if that pages does not need a static version.
-Example:
+Make sure you have jquery and jquery validate loaded on your pages with ajax forms.
+Also include the following js file:
 ```
-public function generatestatic(){
-    if($this->URLSegment == 'contact-us'){
-        return false;
+Requirements::javascript('thewebmen/silverstripe-ajaxforms:resources/js/ajaxforms.js');
+```
+Then create a form by extending the class TheWebmen\Ajaxforms\AjaxForm that returns an instance of the TheWebmen\Ajaxforms\AjaxFormResponse class on success.
+### Form example
+```
+use TheWebmen\Ajaxforms\AjaxForm;
+use SilverStripe\Control\RequestHandler;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FormAction;
+use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\RequiredFields;
+
+class ExampleForm extends AjaxForm {
+
+    public function __construct(RequestHandler $controller = null)
+    {
+        $fields = new FieldList(array(
+            TextField::create('MyField', 'This is a field')
+        ));
+
+        $actions = new FieldList(array(
+           FormAction::create('handle', 'Send')
+        ));
+
+        $validator = new ExampleFormValidator(array(
+            'MyField'
+        ));
+
+        parent::__construct($controller, 'MyField', $fields, $actions, $validator);
     }
-    return true;
+
+    public function handle($data){
+        $response = new \TheWebmen\Ajaxforms\AjaxFormResponse();
+        return $response->redirect('http://www.google.nl');
+    }
+
+}
+
+class ExampleFormValidator extends RequiredFields {
+
+    public function php($data)
+    {
+        $valid = parent::php($data);
+        if($data['MyField'] != 'Test'){
+            $this->validationError(
+                'MyField',
+                'This field is only valid if the value is: Test',
+                'required'
+            );
+            $valid = false;
+        }
+        return $valid;
+    }
+
 }
 ```
-If you publish a page with static change then the system wil remove the cache for that page and all pages returned by the optional "urlsAffectedByThisPage" method, make sure that this method returns absolute urls.
-Example:
-```
-public function urlsAffectedByThisPage(){
-    $children = SiteTree::get()->filter('ParentID', $this->ID);
-    $urls = [];
-    foreach($children as $child){
-    $urls[] = $child->AbsoluteURL();
-    }
-    return $urls;
-}
-```
+Form errors are displayed using jQuery validate, you can initiate your own jQuery validate to customize the settings or you can let the ajaxforms.js script handle this to use jQuery validate's default settings.
 
-## View the uncached version
-Uncached versiones are served when viewing the website in stage mode are when you add ?skipcache=1 to the url
+The class ".is-posting" is added to the form while it is positing, you should use this class to add some progress styling.
 
-## Dynamic content
-If your page contains dynamic content and/or forms then you need to ajax them
-
-## Tasks
-There are three tasks available:
-- dev/tasks/install-staticpages (create the staticpages folder, create a symlink and modify the htaccess)
-- dev/tasks/staticpages (generate all static pages, most of the times not needed)
-- dev/tasks/flush-staticpages (remove all generated pages, useful after a template change)
+## Todo
+* Improve documentation
+* Add check if page exist for the redirectToPage response
+* Add more response options (message?)

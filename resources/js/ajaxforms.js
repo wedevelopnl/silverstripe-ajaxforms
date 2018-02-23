@@ -33,7 +33,6 @@ jQuery(document).ready(function () {
                 window.location = response.url;
                 break;
             }
-            console.log(response);
           }
         }
       });
