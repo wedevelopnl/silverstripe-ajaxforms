@@ -11,6 +11,7 @@ jQuery(document).ready(function () {
     }
     if (form.valid()) {
       form.addClass('is-posting');
+      jQuery(':focus').blur();
       jQuery.ajax({
         headers: {
           Accept: 'application/json'
@@ -31,6 +32,20 @@ jQuery(document).ready(function () {
             switch (response.action) {
               case 'redirect':
                 window.location = response.url;
+                break;
+              case 'message':
+                var messageElement = jQuery('<div style="display: none;"/>');
+                messageElement.addClass('form-message');
+                messageElement.html(response.message);
+                if(response.prependMessage){
+                  form.prepend(messageElement);
+                }else{
+                  form.append(messageElement);
+                }
+                messageElement.slideDown();
+                if(response.clearform){
+                  form[0].reset();
+                }
                 break;
             }
           }

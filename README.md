@@ -83,4 +83,3 @@ The class ".is-posting" is added to the form while it is positing, you should us
 ## Todo
 * Improve documentation
 * Add check if page exist for the redirectToPage response
-* Add more response options (message?)

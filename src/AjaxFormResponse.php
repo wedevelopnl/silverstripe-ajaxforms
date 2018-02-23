@@ -36,6 +36,23 @@ class AjaxFormResponse extends ViewableData
         return $this->redirectToURL($page->Link());
     }
 
+    /**
+     * Show a message and optional clear the form
+     * @param $message
+     * @param bool $emptyForm
+     * @param bool $prependMessage
+     * @return string
+     */
+    public function message($message, $clearform = true, $prependMessage = true){
+        return json_encode(array(
+            'success' => true,
+            'action' => 'message',
+            'clearform' => $clearform,
+            'prependMessage' => $prependMessage,
+            'message' => $message
+        ));
+    }
+
 }
 
 
